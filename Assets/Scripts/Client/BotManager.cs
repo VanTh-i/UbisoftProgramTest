@@ -8,6 +8,9 @@ public class BotManager : MonoBehaviour
 
     public float botThinkingInterval = 0.5f; // Time between bot decisions
 
+    private Dictionary<int, Vector3> virtualBotPositions = new Dictionary<int, Vector3>();
+    private Dictionary<int, int> botTargetEggs = new Dictionary<int, int>();
+
     private void Start()
     {
         NetworkSimulator.Instance.OnClientReceivedMessage += HandleMessageFromServer;
@@ -20,6 +23,14 @@ public class BotManager : MonoBehaviour
         if (msg is GameStateUpdateMessage gameState)
         {
             latestGameState = gameState;
+
+            foreach (PlayerState p in gameState.Players)
+            {
+                if (p.PlayerID != 1)
+                {
+                    virtualBotPositions[p.PlayerID] = p.Position;
+                }
+            }
         }
     }
 
@@ -32,48 +43,77 @@ public class BotManager : MonoBehaviour
             if (latestGameState == null || latestGameState.Players == null || latestGameState.Eggs == null)
                 continue;
 
-            foreach (PlayerState player in latestGameState.Players)
-            {
-                if (player.PlayerID == 1) continue; //bo qua local player
+            ClientPlayer[] allPlayersOnScreen = FindObjectsOfType<ClientPlayer>();
 
-                Vector3? targetEggPos = GetClosestEgg(player.Position);
+            foreach (ClientPlayer bot in allPlayersOnScreen)
+            {
+                if (bot.isLocalPlayer) continue;
+
+                if (!virtualBotPositions.ContainsKey(bot.PlayerID))
+                {
+                    virtualBotPositions[bot.PlayerID] = bot.transform.position;
+                }
+
+                Vector3 currentVirtualPos = virtualBotPositions[bot.PlayerID];
+
+                Vector3? targetEggPos = GetClosestEgg(bot.PlayerID, currentVirtualPos);
+
                 if (targetEggPos.HasValue)
                 {
-                    List<Vector3> path = Pathfinding.Instance.FindPath(player.Position, targetEggPos.Value); //A* pathfinding
-
+                    List<Vector3> path = Pathfinding.Instance.FindPath(currentVirtualPos, targetEggPos.Value); //A* pathfinding
+                    Vector3 nextStep = currentVirtualPos;
                     if (path != null && path.Count > 0)
                     {
-                        Vector3 nextStep = path[0];
-
-                        MoveRequestMessage req = new MoveRequestMessage
-                        {
-                            PlayerID = player.PlayerID,
-                            TargetPosition = nextStep
-                        };
-
-                        NetworkSimulator.Instance.SendToServer(req);
+                        nextStep = path[0];
                     }
+                    else
+                    {
+                        nextStep = targetEggPos.Value;
+                    }
+                    virtualBotPositions[bot.PlayerID] = nextStep;
+
+                    MoveRequestMessage req = new MoveRequestMessage
+                    {
+                        PlayerID = bot.PlayerID,
+                        TargetPosition = nextStep
+                    };
+
+                    NetworkSimulator.Instance.SendToServer(req);
+
+                    bot.UpdateServerPosition(nextStep);
                 }
             }
+
         }
     }
 
-    private Vector3? GetClosestEgg(Vector3 botPosition)
+    private Vector3? GetClosestEgg(int botID, Vector3 botPosition) //with Stickiness
     {
         float minDistance = float.MaxValue;
-        Vector3? closestPos = null;
+        EggState? bestEgg = null;
+
+        int currentTargetID = botTargetEggs.ContainsKey(botID) ? botTargetEggs[botID] : -1;
 
         foreach (EggState egg in latestGameState.Eggs)
         {
             float dist = Vector3.Distance(botPosition, egg.Position);
-            if (dist < minDistance)
+
+            float adjustedDist = (egg.EggID == currentTargetID) ? (dist - 1.5f) : dist;
+
+            if (adjustedDist < minDistance)
             {
-                minDistance = dist;
-                closestPos = egg.Position;
+                minDistance = adjustedDist;
+                bestEgg = egg;
             }
         }
 
-        return closestPos;
+        if (bestEgg.HasValue)
+        {
+            botTargetEggs[botID] = bestEgg.Value.EggID;
+            return bestEgg.Value.Position;
+        }
+
+        return null;
     }
 
 }
