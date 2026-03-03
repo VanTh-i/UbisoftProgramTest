@@ -7,7 +7,7 @@ public class NetworkSimulator : MonoBehaviour
 {
     public static NetworkSimulator Instance;
 
-    [Range(0f, 5f)] public float SimulatedLatency = 0.1f;
+    [Range(0f, 5f)] public float SimulatedLatency = 0.02f;
 
     public event Action<BaseMessage> OnClientReceivedMessage;
     public event Action<BaseMessage> OnServerReceivedMessage;
