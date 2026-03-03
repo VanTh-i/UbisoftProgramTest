@@ -28,9 +28,19 @@ public class ClientPlayer : MonoBehaviour
 
     private void Update()
     {
+        Vector3 moveDirection = serverTargetPosition - transform.position;
+        moveDirection.y = 0f;
+
         if (Vector3.Distance(transform.position, serverTargetPosition) > 0.05f)
         {
             transform.position = Vector3.Lerp(transform.position, serverTargetPosition, Time.deltaTime * lerpSpeed);
+        }
+
+        if (moveDirection.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 15f);
         }
     }
 }

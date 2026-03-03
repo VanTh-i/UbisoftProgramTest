@@ -165,7 +165,7 @@ public class ServerLogic : MonoBehaviour
 
     private void SetNextUpdateTime()
     {
-        //nextUpdateTime = Random.Range(0.01f, 1f); 
-        nextUpdateTime = 0f;
+        nextUpdateTime = Random.Range(1f, 5f); 
+        //nextUpdateTime = 0f;
     }
 }
