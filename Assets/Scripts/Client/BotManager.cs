@@ -24,13 +24,13 @@ public class BotManager : MonoBehaviour
         {
             latestGameState = gameState;
 
-            foreach (PlayerState p in gameState.Players)
-            {
-                if (p.PlayerID != 1)
-                {
-                    virtualBotPositions[p.PlayerID] = p.Position;
-                }
-            }
+            //foreach (PlayerState p in gameState.Players)
+            //{
+            //    if (p.PlayerID != 1)
+            //    {
+            //        virtualBotPositions[p.PlayerID] = p.Position;
+            //    }
+            //}
         }
     }
 

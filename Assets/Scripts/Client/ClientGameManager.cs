@@ -99,13 +99,13 @@ public class ClientGameManager : MonoBehaviour
 
                 if (pData.PlayerID == localPlayerID) currentInputTarget = pData.Position;
             }
-            else
-            {
-                if (pData.PlayerID != localPlayerID)
-                {
-                    activePlayers[pData.PlayerID].UpdateServerPosition(pData.Position);
-                }
-            }
+            //else
+            //{
+            //    if (pData.PlayerID != localPlayerID)
+            //    {
+            //        activePlayers[pData.PlayerID].UpdateServerPosition(pData.Position);
+            //    }
+            //}
         }
     }
 
