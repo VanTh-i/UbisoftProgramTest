@@ -22,6 +22,8 @@ The game is simple: 1 Local Player and "x" AI Bots compete to collect as many eg
 
 - Open the MainGame scene.
 
+- In Hierarchy, open NetworkSimulate/SERVER to config player and UI/UIManager to config duration.
+
 - Hit the Play button.
 
 - Use W, A, S, D or Arrow Keys to move the green character.
