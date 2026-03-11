@@ -123,21 +123,22 @@ public class ClientGameManager : MonoBehaviour
                 newEgg.GetComponent<Renderer>().material.color = eData.EggColor;
                 activeEggs.Add(eData.EggID, newEgg);
             }
+        }
 
-            List<int> eggsToRemove = new List<int>();
-            foreach (int clientEggID in activeEggs.Keys)
+        List<int> eggsToRemove = new List<int>();
+        foreach (int clientEggID in activeEggs.Keys)
+        {
+            if (!serverEggIDs.Contains(clientEggID))
             {
-                if (!serverEggIDs.Contains(clientEggID))
-                {
-                    Destroy(activeEggs[clientEggID]);
-                    eggsToRemove.Add(clientEggID);
-                }
-            }
-
-            foreach (int id in eggsToRemove)
-            {
-                activeEggs.Remove(id);
+                Destroy(activeEggs[clientEggID]);
+                eggsToRemove.Add(clientEggID);
             }
         }
+
+        foreach (int id in eggsToRemove)
+        {
+            activeEggs.Remove(id);
+        }
+
     }
 }
